@@ -7,24 +7,24 @@ James Coller
 
 &nbsp; 
 
-### Goal
-*****
-
 ### Goal 
 *****
  
-_Provide a short, 1-3 sentence description of the goal of your model_
+The goal of this model is to provide knowledge for designers how design choices in autonomous marine vehicles impact wartime effectiveness in a Naval combat setting. In early stages of design, it can be difficult for designers and owners to choose key requirements such as speed and endurance whithout understanding the broader implications of these design choices. This model is aimed to allow designers to gain knowledge on the wartime impacts of those design choices. 
 
 &nbsp;  
 ### Justification
 ****
-_Short explanation on why you are using ABM_
+
+Agent based modeling is an appropriate tool for this scenario becasue it directly represents the eventual end use case of the items being designed. Autonomous underwater vehicles (AUVs) and autonomous surface vehicles (ASVs) are being designed and built for unmanned missions where they will interact with other unmanned platforms as well as manned platforms, both friendly and combative in the case of military vehicles. Agent based models allow these vehicles to be expressed as agents and have the interactions (both macro-level and micro-level) invesitigated. Other design simulation tools, such as finite element analysis, or computational fluid dynamics, allow for investigating design impacts on a single vehicle. These tools, and many tools, do not allow to see how the dynamics of multiple vehicles impact performance. That is the goal of this simulation and is the advantage of agent based modeling. 
 
 &nbsp; 
 ### Main Micro-level Processes and Macro-level Dynamics of Interest
 ****
 
-_Short overview of the key processes and/or relationships you are interested in using your model to explore. Will likely be something regarding emergent behavior that arises from individual interactions_
+On a microscopic level, the abilty for an invididual agent to be able to carry out a given mission from the design parameters of that agent will be of particular focus. For example, if an AUV agent has design parameters X,Y, and Z, can it successfully complete Mission 1? 
+
+On a macroscopic level, the ability for multiple vehicles to communicate with each other and work together will be investigated. Additionally, examining how combinations of multiple vehicle types may lead to different results in mission effectiveness. The agents will all be interacting throughout the world together trying to accomplish invididual and common goals. How these goals are achieved or failed based on individual design parameters will be of particular interest. 
 
 &nbsp; 
 
@@ -33,36 +33,79 @@ _Short overview of the key processes and/or relationships you are interested in 
 ****
 &nbsp; 
 ### 1) Environment
-_Description of the environment in your model. Things to specify *if they apply*:_
 
-* _Boundary conditions (e.g. wrapping, infinite, etc.)_
-* _Dimensionality (e.g. 1D, 2D, etc.)_
-* _List of environment-owned variables (e.g. resources, states, roughness)_
-* _List of environment-owned methods/procedures (e.g. resource production, state change, etc.)_
+The environment will similate a limted three dimensional grid. A two dimensional plane extending in a given width and height will represent the primary space for the agents to interact. The third dimension represents surface level versus subsea agents, as some agents (submarines, AUVs) will be subsurface, and other agents (ships, ASVs) will be on the surface level. The grid will have continuous spacing (non-discrete) to allow for movement freedom. 
 
+Some areas of the grid will represent land where agents cannot move. Other areas will represent the ocean where agents are able to freely move. Home bases will represent the intitial starting location for the agents. The environment will include wrapping. 
 
 ```python
-# Include first pass of the code you are thinking of using to construct your environment
-# This may be a set of "patches-own" variables and a command in the "setup" procedure, a list, an array, or Class constructor
-# Feel free to include any patch methods/procedures you have. Filling in with pseudocode is ok! 
-# NOTE: If using Netlogo, remove "python" from the markdown at the top of this section to get a generic code block
+import numpy as np
+
+# Environmental Variables 
+width = 1000
+height = 100 
+
+def init():
+	global time, agents, surf_envrionment, sub_environment
+
+	time = 0 
+
+	# Still debating how to best represent the continuous environment... 
+	surf_envrionment = np.zeros((width, height), dtype=np.int8) # Do I want this to be a grid? 
+	sub_environment = np.zeros((width, height), dtype=np.int8)
+
+	# Set Land areas 
+	# Set land areas here in surf_environment and sub_environment by setting their number to be something
+	# other than 0. -1 maybe? 
+
+	# Set home ports for enemy and friendly 
+	# Set locations here in surf_environment and sub_environment by setting their number to be 
+	# something other than 0. 2 maybe? 1 would be occiupied... 
+
+	# The problem here with doing a grid is I'm making this a discrete environment... how do I 
+	# represent the environment as a continuous space? 
+
+	# Setup the agents in the environment 
+	agents = []
+	for i in xrange(num_agents):
+		# Loop through and place all of the agents in their starting locations 
 ```
 
 &nbsp; 
 
 ### 2) Agents
- 
- _Description of the "agents" in the system. Things to specify *if they apply*:_
- 
-* _List of agent-owned variables (e.g. age, heading, ID, etc.)_
-* _List of agent-owned methods/procedures (e.g. move, consume, reproduce, die, etc.)_
+
+There are four primary agent classes in the system, all contain the same properties, as shown in the code snippet below. The four agent classes are ships, submarines, AUVs, and ASVs. 
 
 
 ```python
-# Include first pass of the code you are thinking of using to construct your agents
-# This may be a set of "turtle-own" variables and a command in the "setup" procedure, a list, an array, or Class constructor
-# Feel free to include any agent methods/procedures you have so far. Filling in with pseudocode is ok! 
-# NOTE: If using Netlogo, remove "python" from the markdown at the top of this section to get a generic code block
+class AUV(object):
+	"""
+	AUV Class, which encapsulates the behaviors of the AUVs present in the model. 
+	"""
+
+	def __init__(self,auv_id,start_x,start_y,velocity,endurance,strength,team):
+		# AUV Constructor 
+
+		self.id = auv_id
+		self.x = start_x
+		self.y = start_y 
+		self.speed = velocity
+		self.endurance = endurance
+		self.strength = strength # Do I want this? TBD... 
+		self.height = -1 # we are below the water 
+		self.team = team
+
+	def move(self):
+		# Function for AUV to move around the map 
+		# To be written 
+
+	def attack(self): 
+		# Function to attack or identify the enemy 
+		# To be written 
+
+	def report(self):
+		# function to report information back to other agents 
 ```
 
 &nbsp; 
