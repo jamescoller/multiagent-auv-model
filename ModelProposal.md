@@ -69,6 +69,14 @@ def init():
 	agents = []
 	for i in xrange(num_agents):
 		# Loop through and place all of the agents in their starting locations 
+		
+def step():
+	global time, agents, surf_envrionment, sub_environment
+
+	time += 1
+
+	for agent in agents:
+		agent.step()
 ```
 
 &nbsp; 
