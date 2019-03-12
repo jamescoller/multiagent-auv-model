@@ -69,21 +69,16 @@ def init():
 	agents = []
 	for i in xrange(num_agents):
 		# Loop through and place all of the agents in their starting locations 
-		
-def step():
-	global time, agents, surf_envrionment, sub_environment
-
-	time += 1
-
-	for agent in agents:
-		agent.step()
+	
 ```
 
 &nbsp; 
 
 ### 2) Agents
 
-There are four primary agent classes in the system, all contain the same properties, as shown in the code snippet below. The four agent classes are ships, submarines, AUVs, and ASVs. 
+There are four primary agent classes in the system, all contain the same properties, as shown in the code snippet below. The four agent classes are ships, submarines, AUVs, and ASVs. Each agent will move, communicate, and detect or attack other agents from the opposition. The AUVs and Submarines will be below the surface, and the ASVs and Ships will be above the surface. The AUVs and ASVs will not be able to attack other agents. Submarines and Ships can attack all other enemies. Submarines and AUVs can see agents on the surface or underwater. Ships and ASVs can only see other agents on the surface. 
+
+The various types of agents will each have unique movement structures. For instance, an AUV will not be able to travel as far as a ship. The AUVs will swarm together and move together, while Ships will move alone. These movement styles are subject to change. 
 
 
 ```python
@@ -92,7 +87,7 @@ class AUV(object):
 	AUV Class, which encapsulates the behaviors of the AUVs present in the model. 
 	"""
 
-	def __init__(self,auv_id,start_x,start_y,velocity,endurance,strength,team):
+	def __init__(self,auv_id,start_x,start_y,velocity,endurance,strength,team,radius):
 		# AUV Constructor 
 
 		self.id = auv_id
@@ -103,6 +98,7 @@ class AUV(object):
 		self.strength = strength # Do I want this? TBD... 
 		self.height = -1 # we are below the water 
 		self.team = team
+		self.radius = radius # how far around itself the agent can "see"
 
 	def move(self):
 		# Function for AUV to move around the map 
@@ -122,33 +118,79 @@ class AUV(object):
  
 **_Interaction Topology_**
 
-_Description of the topology of who interacts with whom in the system. Perfectly mixed? Spatial proximity? Along a network? CA neighborhood?_
+Agents will interact with each other by being able to identify other agents within a set radius. Once identified, the agent will make an action dependent upon what has been identified. Agents on any given team will know the location of the other agents on the team. The agents will interact with the environment by moving throughout the environment. Individual agents will have the ability to move at different speeds depending upon the individual agent. 
  
 **_Action Sequence_**
 
-_What does an agent, cell, etc. do on a given turn? Provide a step-by-step description of what happens on a given turn for each part of your model_
+During a given turn of the model, the following sequence will be carried out for each agent. Each agent will complete the full sequence before the next agent moves. 
 
-1. Step 1
-2. Step 2
-3. Etc...
+0. Agent will assess its strength. 
+⋅⋅i. If agent strength is 0, the turn is over. Agent is dead. 
+1. Agent will assess its current position. 
+⋅⋅i. If it is with an enemy, it will move to the attack phase. 
+⋅⋅ii. If it is with a friendly, it will reposition.
+⋅⋅iii. If it is alone, it will reposition. 
+⋅⋅iv. If the agent is out of endurance, the agent must remain in position until it can have its endurance reset. 
+2. Agent will move (if needed). 
+⋅⋅i. If the agent knows where an enemy is, it will move toward that enemy. 
+⋅⋅ii. If an agent does not know the location of the enemy, it will move following its standard movement procedure. 
+3. Agent will reassess its position as it moves. 
+⋅⋅i. If it meets an enemy, it will stop. 
+⋅⋅ii. If it does not meet an enemy, it will continue until it can no longer move for that turn. 
+4. Agent will reassess its new position. 
+⋅⋅i. If it meet an enemy, it will move to the attack phase. 
+⋅⋅ii. If it is alone or with a friendly, the turn ends. 
+5. Agent will attack the enemy (if able).
+⋅⋅i. If able to, the agent will attack the enemy, reducing the strength of the enemy. 
+⋅⋅ii. If more than one enemy is present, agent will attack the closest enemy. 
+⋅⋅iii. If agent is unable to attack (only a messenger - such as the AUV or ASV), the agent will relay the locaton of the enemy to the rest of the friendly Navy. 
+6. The turn is over. 
+
+```python
+def step():
+	global time, agents, surf_envrionment, sub_environment
+
+	time += 1
+
+	for agent in agents:
+		agent.step()
+```
 
 &nbsp; 
 ### 4) Model Parameters and Initialization
 
-_Describe and list any global parameters you will be applying in your model._
+The global parameters of the model are primarily the environmental parameters. These include:
++ Environment width
++ Environment height
++ How many of each agent are present 
 
-_Describe how your model will be initialized_
+Individual agent parameters will include:
++ Strength
++ Speed
++ Endurance
++ Position
++ Team
++ Sight Radius 
++ Endurance recharge time
 
-_Provide a high level, step-by-step description of your schedule during each "tick" of the model_
+The model is initialzied following the code in the environment section of this document. This model will utilize the pycx package with a GUI that includes an initialization step. During the initization, the environmental variables and space are created and then each agent is created in a list. From there, each agent will step through its procedure in order. Each agent begins at its home base. The home base location will be hard coded into the environmental setup, along with where "land" is located. The agents will intially disperse from the home base in different directions.  
 
 &nbsp; 
 
 ### 5) Assessment and Outcome Measures
 
-_What quantitative metrics and/or qualitative features will you use to assess your model outcomes?_
+Each agent will be attempting to help convey information to destroy the enemy. The primary metrics to be measured are (1) how long does it take to destroy the enemy, and (2) how much of the friendly force was lost in the process. 
+
+The simulation will run until a timeout limit, or until the enemy is destroyed (or the friendly force is destroyed). These metrics will be assessed and compared with each other based on the simulation parameters. 
 
 &nbsp; 
 
 ### 6) Parameter Sweep
 
-_What parameters are you most interested in sweeping through? What value ranges do you expect to look at for your analysis?_
+Several parameters will be varied, both individually and simultaneously. These include:
++ Number of agents 
++ Speed of agents
++ Endurance of agents
++ Strength of agents
+
+Since the goal of this simulation specifically is to look at the design characteristics of the autonomous vehicles (ASVs and AUVs), the parameters of those vehicles will vary, but the parameters of the ships and submarines will remain the same. 
