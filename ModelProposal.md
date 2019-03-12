@@ -125,25 +125,25 @@ Agents will interact with each other by being able to identify other agents with
 During a given turn of the model, the following sequence will be carried out for each agent. Each agent will complete the full sequence before the next agent moves. 
 
 0. Agent will assess its strength. 
-⋅⋅i. If agent strength is 0, the turn is over. Agent is dead. 
+	1. If agent strength is 0, the turn is over. Agent is dead. 
 1. Agent will assess its current position. 
-⋅⋅i. If it is with an enemy, it will move to the attack phase. 
-⋅⋅ii. If it is with a friendly, it will reposition.
-⋅⋅iii. If it is alone, it will reposition. 
-⋅⋅iv. If the agent is out of endurance, the agent must remain in position until it can have its endurance reset. 
+	1. If it is with an enemy, it will move to the attack phase. 
+	2. If it is with a friendly, it will reposition.
+	3. If it is alone, it will reposition. 
+	4. If the agent is out of endurance, the agent must remain in position until it can have its endurance reset. 
 2. Agent will move (if needed). 
-⋅⋅i. If the agent knows where an enemy is, it will move toward that enemy. 
-⋅⋅ii. If an agent does not know the location of the enemy, it will move following its standard movement procedure. 
+	1. If the agent knows where an enemy is, it will move toward that enemy. 
+	2. If an agent does not know the location of the enemy, it will move following its standard movement procedure. 
 3. Agent will reassess its position as it moves. 
-⋅⋅i. If it meets an enemy, it will stop. 
-⋅⋅ii. If it does not meet an enemy, it will continue until it can no longer move for that turn. 
+	1. If it meets an enemy, it will stop. 
+	2. If it does not meet an enemy, it will continue until it can no longer move for that turn. 
 4. Agent will reassess its new position. 
-⋅⋅i. If it meet an enemy, it will move to the attack phase. 
-⋅⋅ii. If it is alone or with a friendly, the turn ends. 
+	1. If it meet an enemy, it will move to the attack phase. 
+	2. If it is alone or with a friendly, the turn ends. 
 5. Agent will attack the enemy (if able).
-⋅⋅i. If able to, the agent will attack the enemy, reducing the strength of the enemy. 
-⋅⋅ii. If more than one enemy is present, agent will attack the closest enemy. 
-⋅⋅iii. If agent is unable to attack (only a messenger - such as the AUV or ASV), the agent will relay the locaton of the enemy to the rest of the friendly Navy. 
+	1. If able to, the agent will attack the enemy, reducing the strength of the enemy. 
+	2. If more than one enemy is present, agent will attack the closest enemy. 
+	3. If agent is unable to attack (only a messenger - such as the AUV or ASV), the agent will relay the locaton of the enemy to the rest of the friendly Navy. 
 6. The turn is over. 
 
 ```python
