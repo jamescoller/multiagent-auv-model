@@ -30,7 +30,7 @@ class AUV(object):
 	AUV Class, which encapsulates the behaviors of the AUVs present in the model. 
 	"""
 
-	def __init__(self,auv_id,start_x,start_y,velocity,endurance,strength,team):
+	def __init__(self,auv_id,start_x,start_y,velocity,endurance,strength,team,radius):
 		# AUV Constructor 
 
 		self.id = auv_id
@@ -41,6 +41,7 @@ class AUV(object):
 		self.strength = strength # Do I want this? TBD... 
 		self.height = -1 # we are below the water 
 		self.team = team
+		self.radius = radius # how far around itself the agent can "see"
 
 	def move(self):
 		# Function for AUV to move around the map 
@@ -58,7 +59,7 @@ class ASV(object):
 	ASV Class, which encapsulates the behaviors of the ASVs present in the model. 
 	"""
 
-	def __init__(self,auv_id,start_x,start_y,velocity,endurance,strength,team):
+	def __init__(self,auv_id,start_x,start_y,velocity,endurance,strength,team,radius):
 		# AUV Constructor 
 
 		self.id = auv_id
@@ -69,6 +70,7 @@ class ASV(object):
 		self.strength = strength # Do I want this? TBD... 
 		self.height = 1 # we are above the water 
 		self.team = team
+		self.radius = radius # how far around itself the agent can "see"
 
 	def move(self):
 		# Function for ASV to move around the map 
@@ -121,7 +123,7 @@ def step():
 	for agent in agents:
 		agent.step()
 
-		
+
 import pycxsimulator
 pycxsimulator.GUI().start(func=[init,draw,step])
 

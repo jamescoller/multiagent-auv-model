@@ -1,37 +1,10 @@
-## Welcome to GitHub Pages
+## README
 
-You can use the [editor on GitHub](https://github.com/jamescoller/multiagent-auv-model/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+# Required Files
+In order to run the simulation, the following files must be present in the same folder:
+1. DesignImpactSimulator.py
+2. pycxsimulator.py
+3. pycxsimulator.pyc
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
-
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/jamescoller/multiagent-auv-model/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+# Run Instructions
+Execute the file DesignImpactSimulator.py and use the GUI to click the "Run" button to run the simulator continuously, or the "Run Once" button to run the simulator for one time step. 
