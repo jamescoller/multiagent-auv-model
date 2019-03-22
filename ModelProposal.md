@@ -19,6 +19,9 @@ The goal of this model is to provide knowledge for designers how design choices 
 Agent based modeling is an appropriate tool for this scenario becasue it directly represents the eventual end use case of the items being designed. Autonomous underwater vehicles (AUVs) and autonomous surface vehicles (ASVs) are being designed and built for unmanned missions where they will interact with other unmanned platforms as well as manned platforms, both friendly and combative in the case of military vehicles. Agent based models allow these vehicles to be expressed as agents and have the interactions (both macro-level and micro-level) invesitigated. Other design simulation tools, such as finite element analysis, or computational fluid dynamics, allow for investigating design impacts on a single vehicle. These tools, and many tools, do not allow to see how the dynamics of multiple vehicles impact performance. That is the goal of this simulation and is the advantage of agent based modeling. 
 
 &nbsp; 
+
+*LS COMMENTS: Solid setup and justification for an ABM approach here. Definitely points to future pathways for developing increasingly more realistic models as well.*
+
 ### Main Micro-level Processes and Macro-level Dynamics of Interest
 ****
 
@@ -28,6 +31,7 @@ On a macroscopic level, the ability for multiple vehicles to communicate with ea
 
 &nbsp; 
 
+*LS COMMENTS: Good overview.*
 
 ## Model Outline
 ****
@@ -37,6 +41,8 @@ On a macroscopic level, the ability for multiple vehicles to communicate with ea
 The environment will similate a limted three dimensional grid. A two dimensional plane extending in a given width and height will represent the primary space for the agents to interact. The third dimension represents surface level versus subsea agents, as some agents (submarines, AUVs) will be subsurface, and other agents (ships, ASVs) will be on the surface level. The grid will have continuous spacing (non-discrete) to allow for movement freedom. 
 
 Some areas of the grid will represent land where agents cannot move. Other areas will represent the ocean where agents are able to freely move. Home bases will represent the intitial starting location for the agents. The environment will include wrapping. 
+
+*LS COMMENTS: Well thought out environmental specifications. I am curious about the choice to wrap, however. I would assume a non-wrapping boundary would be more realistic unless you are modeling a full planet instead of just a particular area - in which case, issues of relative scale would be a major consideration.*
 
 ```python
 import numpy as np
@@ -112,6 +118,8 @@ class AUV(object):
 		# function to report information back to other agents 
 ```
 
+*LS COMMENTS: Great explanation of the framework and good approach to agent design here.*
+
 &nbsp; 
 
 ### 3) Action and Interaction 
@@ -156,6 +164,8 @@ def step():
 		agent.step()
 ```
 
+*LS COMMENT: Very well-thought out structure. As I believe I mentioned in office hours, will want to think about synchronous vs. asynchronous updates and how that will be handled. Specifically, I think it will be important to consider whether or not ships can simultaneously attack one another or not in turn.*
+
 &nbsp; 
 ### 4) Model Parameters and Initialization
 
@@ -177,6 +187,8 @@ The model is initialzied following the code in the environment section of this d
 
 &nbsp; 
 
+*LS COMMENTS: great.*
+
 ### 5) Assessment and Outcome Measures
 
 Each agent will be attempting to help convey information to destroy the enemy. The primary metrics to be measured are (1) how long does it take to destroy the enemy, and (2) how much of the friendly force was lost in the process. 
@@ -194,3 +206,5 @@ Several parameters will be varied, both individually and simultaneously. These i
 + Strength of agents
 
 Since the goal of this simulation specifically is to look at the design characteristics of the autonomous vehicles (ASVs and AUVs), the parameters of those vehicles will vary, but the parameters of the ships and submarines will remain the same. 
+
+*LS COMMENTS: Really solid proposal with a lot of well-thought out design. Between this and what we discussed in office hours this week, it looks like you are in great shape. 19/20*
