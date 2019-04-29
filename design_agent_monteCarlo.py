@@ -1,58 +1,39 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
-Created on Mon Mar 11 2019
+Created on Tue April 16, 2019
 
 Implementation of a ABM for Design Criteria Impact of AUVs and ASVs
 CMPLXSYS 530 Final Project Winter 2019
 
-April 2019: This file is dated and is held only for the purpose of saving the PYCX implementation.
-
 @author: jcoller
-"""
 
-"""
 To-Do:
+- Implement ASV and Submarine classes
 - Implement endurance
-- Add submarines and ASVs
-- Change to be a class structure
-- Remove PYCX
-- Add Monte Carlo Simulation
 - Update visualizations to reflect the number of enemies remaining over time
-- Add a stopping criterion (everyone is dead)
 - Consider updating environmental constraints such as land masses etc.
 - Consider adding structure to the movement patterns - such as the ships going out to a set area and then releasing AUVs to begin searching
 - Consider how to set various agents to have limited powers, i.e. AUVs cannot attack - just find enemy ships or submarines
+- Setup MC in parallel
 """
 
 # Imports
 import matplotlib
 matplotlib.use('TkAgg')
 
-import pylab as plt
+import matplotlib.pyplot as plt
 import random as rand
 import scipy
 import numpy as np
 import math
 
+from multiprocessing import Pool
+
 import sys
 
-# Set Random Seed
-rand.seed()
-
-# Environmental Variables
 width = 100
 height = 100
-
-# Simulation Parameters
-num_ships = 10
-num_subs = 0
-num_auvs = 100
-num_asvs = 0
-team1_killed = 0
-team2_killed = 0
-
-# Define the agent Classes
 
 class AUV(object):
 	"""
@@ -125,70 +106,70 @@ class AUV(object):
 			the_enemy = min(list_of_enemies, key=pullDistance)
 		else: the_enemy = list_of_enemies[0]
 
-		print "AUV ", self.id, " is attacking ", the_enemy.id
-		print "The enemy's strength is ", the_enemy.strength
+		#print "AUV ", self.id, " is attacking ", the_enemy.id
+		#print "The enemy's strength is ", the_enemy.strength
 
 		# Reduce the Strength of the enemy by 1
 		the_enemy.strength -= 1
 
 		# Check the enemy's remaining strength, if 0, kill them
 		if the_enemy.strength < 1: # the enemy is dead!
-			print "AUV ", the_enemy.id, "has been lost in battle."
+			#print "AUV ", the_enemy.id, "has been lost in battle."
 			global team1_killed
 			global team2_killed
 			if self.team == 1:
-				team2_killed += 1
-			else: team1_killed += 1
+				sim.team2_killed += 1
+			else: sim.team1_killed += 1
 			if the_enemy.vehicle == "AUV":
 				# Find the object and remove it
-				for i in xrange(len(auvs)):
-					if auvs[i].id == the_enemy.id: dead_enemy = i
-				del auvs[dead_enemy]
+				for i in xrange(len(sim.auvs)):
+					if sim.auvs[i].id == the_enemy.id: dead_enemy = i
+				del sim.auvs[dead_enemy]
 
 			if the_enemy.vehicle == "ASV":
 				# Find the object and remove it
-				for i in xrange(len(asvs)):
-					if asvs[i].id == the_enemy.id: dead_enemy = i
-				del asvs[dead_enemy]
+				for i in xrange(len(sim.asvs)):
+					if sim.asvs[i].id == the_enemy.id: dead_enemy = i
+				del sim.asvs[dead_enemy]
 
 			if the_enemy.vehicle == "Submarine":
 				# Find the object and remove it
-				for i in xrange(len(subs)):
-					if subs[i].id == the_enemy.id: dead_enemy = i
-				del subs[dead_enemy]
+				for i in xrange(len(sim.subs)):
+					if sim.subs[i].id == the_enemy.id: dead_enemy = i
+				del sim.subs[dead_enemy]
 
 			if the_enemy.vehicle == "Ship":
 				# Find the object and remove it
-				for i in xrange(len(ships)):
-					if ships[i].id == the_enemy.id: dead_enemy = i
-				del ships[dead_enemy]
+				for i in xrange(len(sim.ships)):
+					if sim.ships[i].id == the_enemy.id: dead_enemy = i
+				del sim.ships[dead_enemy]
 
 	def check_for_enemies(self):
 		list_enemies = []
 		num_enemies = 0
 
-		# Run through the list of all AUVs
-		for i in xrange(len(auvs)):
-			if (self.get_distance(auvs[i]) < self.radius and auvs[i].team != self.team):
-				list_enemies.append(auvs[i])
+		# run through the list of all AUVs
+		for i in xrange(len(sim.auvs)):
+			if (self.get_distance(sim.auvs[i]) < self.radius and sim.auvs[i].team != self.team):
+				list_enemies.append(sim.auvs[i])
 				num_enemies += 1
 
-		# Run through the list of all ships
-		for i in xrange(len(ships)):
-			if (self.get_distance(ships[i]) < self.radius and ships[i].team != self.team):
-				list_enemies.append(ships[i])
+		# run through the list of all ships
+		for i in xrange(len(sim.ships)):
+			if (self.get_distance(sim.ships[i]) < self.radius and sim.ships[i].team != self.team):
+				list_enemies.append(sim.ships[i])
 				num_enemies += 1
 
-		# Run through the list of submarines
-		for i in xrange(len(subs)):
-			if (self.get_distance(subs[i]) < self.radius and subs[i].team != self.team):
-				list_enemies.append(subs[i])
+		# run through the list of submarines
+		for i in xrange(len(sim.subs)):
+			if (self.get_distance(sim.subs[i]) < self.radius and sim.subs[i].team != self.team):
+				list_enemies.append(sim.subs[i])
 				num_enemies += 1
 
-		# Run through the list of ASVs
-		for i in xrange(len(asvs)):
-			if (self.get_distance(asvs[i]) < self.radius and asvs[i].team != self.team):
-				list_enemies.append(asvs[i])
+		# run through the list of ASVs
+		for i in xrange(len(sim.asvs)):
+			if (self.get_distance(sim.asvs[i]) < self.radius and sim.asvs[i].team != self.team):
+				list_enemies.append(sim.asvs[i])
 				num_enemies += 1
 
 		# Check if we found any enemies
@@ -205,24 +186,24 @@ class AUV(object):
 		nearby_friends = []
 		number_friends = 0
 
-		for i in xrange(len(auvs)):
-			if auvs[i].flag and auvs[i].team == self.team and self.get_distance(auvs[i]) < 0.25*width:
-				nearby_friends.append(auvs[i])
+		for i in xrange(len(sim.auvs)):
+			if sim.auvs[i].flag and sim.auvs[i].team == self.team and self.get_distance(sim.auvs[i]) < 0.25*width:
+				nearby_friends.append(sim.auvs[i])
 				number_friends += 1
 
-		for i in xrange(len(asvs)):
-			if asvs[i].flag and asvs[i].team == self.team and self.get_distance(asvs[i]) < 0.25*width:
-				nearby_friends.append(asvs[i])
+		for i in xrange(len(sim.asvs)):
+			if sim.asvs[i].flag and sim.asvs[i].team == self.team and self.get_distance(sim.asvs[i]) < 0.25*width:
+				nearby_friends.append(sim.asvs[i])
 				number_friends += 1
 
-		for i in xrange(len(subs)):
-			if subs[i].flag and subs[i].team == self.team and self.get_distance(subs[i]) < 0.25*width:
-				nearby_friends.append(subs[i])
+		for i in xrange(len(sim.subs)):
+			if sim.subs[i].flag and sim.subs[i].team == self.team and self.get_distance(sim.subs[i]) < 0.25*width:
+				nearby_friends.append(sim.subs[i])
 				number_friends += 1
 
-		for i in xrange(len(ships)):
-			if ships[i].flag and ships[i].team == self.team and self.get_distance(ships[i]) < 0.25*width:
-				nearby_friends.append(ships[i])
+		for i in xrange(len(sim.ships)):
+			if sim.ships[i].flag and sim.ships[i].team == self.team and self.get_distance(sim.ships[i]) < 0.25*width:
+				nearby_friends.append(sim.ships[i])
 				number_friends += 1
 
 		if number_friends > 0:
@@ -243,14 +224,14 @@ class AUV(object):
 		# Check if an enemy is within range
 		[enemies, list_of_enemies] = self.check_for_enemies()
 		if enemies > 0:
-			print "AUV ", self.id, " is attacking!"
+			#print "AUV ", self.id, " is attacking!"
 			self.attack(list_of_enemies)
 			return
 		# Check if a nearby ship has enemies
 		the_response = self.ask_nearby_friends()
 		if the_response[0] == True:
 			# Move to our friend!
-			print "AUV ", self.id, " is moving to assist an ally"
+			#print "AUV ", self.id, " is moving to assist an ally"
 			self.move_to_point(the_response[1].x,the_response[1].y)
 			return
 		# Else, move randomly
@@ -361,70 +342,70 @@ class Ship(object):
 			the_enemy = min(list_of_enemies, key=pullDistance)
 		else: the_enemy = list_of_enemies[0]
 
-		print "Ship ", self.id, " is attacking ", the_enemy.id
-		print "The enemy's strength is ", the_enemy.strength
+		#print "Ship ", self.id, " is attacking ", the_enemy.id
+		#print "The enemy's strength is ", the_enemy.strength
 
 		# Reduce the Strength of the enemy by 1
 		the_enemy.strength -= 1
 
 		# Check the enemy's remaining strength, if 0, kill them
 		if the_enemy.strength < 1: # the enemy is dead!
-			print "Ship ", the_enemy.id, "has been lost in battle."
+			#print "Ship ", the_enemy.id, "has been lost in battle."
 			global team1_killed
 			global team2_killed
 			if self.team == 1:
-				team2_killed += 1
-			else: team1_killed += 1
+				sim.team2_killed += 1
+			else: sim.team1_killed += 1
 			if the_enemy.vehicle == "AUV":
 				# Find the object and remove it
-				for i in xrange(len(auvs)):
-					if auvs[i].id == the_enemy.id: dead_enemy = i
-				del auvs[dead_enemy]
+				for i in xrange(len(sim.auvs)):
+					if sim.auvs[i].id == the_enemy.id: dead_enemy = i
+				del sim.auvs[dead_enemy]
 
 			if the_enemy.vehicle == "ASV":
 				# Find the object and remove it
-				for i in xrange(len(asvs)):
-					if asvs[i].id == the_enemy.id: dead_enemy = i
-				del asvs[dead_enemy]
+				for i in xrange(len(sim.asvs)):
+					if sim.asvs[i].id == the_enemy.id: dead_enemy = i
+				del sim.asvs[dead_enemy]
 
 			if the_enemy.vehicle == "Submarine":
 				# Find the object and remove it
-				for i in xrange(len(subs)):
-					if subs[i].id == the_enemy.id: dead_enemy = i
-				del subs[dead_enemy]
+				for i in xrange(len(sim.subs)):
+					if sim.subs[i].id == the_enemy.id: dead_enemy = i
+				del sim.subs[dead_enemy]
 
 			if the_enemy.vehicle == "Ship":
 				# Find the object and remove it
-				for i in xrange(len(ships)):
-					if ships[i].id == the_enemy.id: dead_enemy = i
-				del ships[dead_enemy]
+				for i in xrange(len(sim.ships)):
+					if sim.ships[i].id == the_enemy.id: dead_enemy = i
+				del sim.ships[dead_enemy]
 
 	def check_for_enemies(self):
 		list_enemies = []
 		num_enemies = 0
 
-		# Run through the list of all AUVs
-		for i in xrange(len(auvs)):
-			if (self.get_distance(auvs[i]) < self.radius and auvs[i].team != self.team):
-				list_enemies.append(auvs[i])
+		# run through the list of all AUVs
+		for i in xrange(len(sim.auvs)):
+			if (self.get_distance(sim.auvs[i]) < self.radius and sim.auvs[i].team != self.team):
+				list_enemies.append(sim.auvs[i])
 				num_enemies += 1
 
-		# Run through the list of all ships
-		for i in xrange(len(ships)):
-			if (self.get_distance(ships[i]) < self.radius and ships[i].team != self.team):
-				list_enemies.append(ships[i])
+		# run through the list of all ships
+		for i in xrange(len(sim.ships)):
+			if (self.get_distance(sim.ships[i]) < self.radius and sim.ships[i].team != self.team):
+				list_enemies.append(sim.ships[i])
 				num_enemies += 1
 
-		# Run through the list of submarines
-		for i in xrange(len(subs)):
-			if (self.get_distance(subs[i]) < self.radius and subs[i].team != self.team):
-				list_enemies.append(subs[i])
+		# run through the list of submarines
+		for i in xrange(len(sim.subs)):
+			if (self.get_distance(sim.subs[i]) < self.radius and sim.subs[i].team != self.team):
+				list_enemies.append(sim.subs[i])
 				num_enemies += 1
 
-		# Run through the list of ASVs
-		for i in xrange(len(asvs)):
-			if (self.get_distance(asvs[i]) < self.radius and asvs[i].team != self.team):
-				list_enemies.append(asvs[i])
+		# run through the list of ASVs
+		for i in xrange(len(sim.asvs)):
+			if (self.get_distance(sim.asvs[i]) < self.radius and sim.asvs[i].team != self.team):
+				list_enemies.append(sim.asvs[i])
 				num_enemies += 1
 
 		# Check if we found any enemies
@@ -441,24 +422,24 @@ class Ship(object):
 		nearby_friends = []
 		number_friends = 0
 
-		for i in xrange(len(auvs)):
-			if auvs[i].flag and auvs[i].team == self.team and self.get_distance(auvs[i]) < 0.25*width:
-				nearby_friends.append(auvs[i])
+		for i in xrange(len(sim.auvs)):
+			if sim.auvs[i].flag and sim.auvs[i].team == self.team and self.get_distance(sim.auvs[i]) < 0.25*width:
+				nearby_friends.append(sim.auvs[i])
 				number_friends += 1
 
-		for i in xrange(len(asvs)):
-			if asvs[i].flag and asvs[i].team == self.team and self.get_distance(asvs[i]) < 0.25*width:
-				nearby_friends.append(asvs[i])
+		for i in xrange(len(sim.asvs)):
+			if sim.asvs[i].flag and sim.asvs[i].team == self.team and self.get_distance(sim.asvs[i]) < 0.25*width:
+				nearby_friends.append(sim.asvs[i])
 				number_friends += 1
 
-		for i in xrange(len(subs)):
-			if subs[i].flag and subs[i].team == self.team and self.get_distance(subs[i]) < 0.25*width:
-				nearby_friends.append(subs[i])
+		for i in xrange(len(sim.subs)):
+			if sim.subs[i].flag and sim.subs[i].team == self.team and self.get_distance(sim.subs[i]) < 0.25*width:
+				nearby_friends.append(sim.subs[i])
 				number_friends += 1
 
-		for i in xrange(len(ships)):
-			if ships[i].flag and ships[i].team == self.team and self.get_distance(ships[i]) < 0.25*width:
-				nearby_friends.append(ships[i])
+		for i in xrange(len(sim.ships)):
+			if sim.ships[i].flag and sim.ships[i].team == self.team and self.get_distance(sim.ships[i]) < 0.25*width:
+				nearby_friends.append(sim.ships[i])
 				number_friends += 1
 
 		if number_friends > 0:
@@ -479,14 +460,14 @@ class Ship(object):
 		# Check if an enemy is within range
 		[enemies, list_of_enemies] = self.check_for_enemies()
 		if enemies > 0:
-			print "Ship ", self.id, " is attacking!"
+			#print "Ship ", self.id, " is attacking!"
 			self.attack(list_of_enemies)
 			return
 		# Check if a nearby ship has enemies
 		the_response = self.ask_nearby_friends()
 		if the_response[0] == True:
 			# Move to our friend!
-			print "Ship ", self.id, " is moving to assist an ally"
+			#print "Ship ", self.id, " is moving to assist an ally"
 			self.move_to_point(the_response[1].x,the_response[1].y)
 			return
 		# Else, move randomly
@@ -526,157 +507,191 @@ class Submarine(object):
 		return
 		# function to report information back to other agents
 
-# Setup the environment
+class Simulation(object):
+	"""
+	The simulator class which runs the simulation for the MC chains
+	"""
+	def __init__(self, simulation_number, auv_range = 5, auv_speed = 2, auv_endurance = 1, auv_strength = 2, max_iter = 1000):
+		# Simulation Constructor
 
-def init():
-	global time, auvs, ships, subs, asvs, surf_environment, sub_environment, team1_killed, team2_killed
+		# Simulation Variables
+		self.id = simulation_number
+		self.max_iter = max_iter
+		self.run_status = True
 
-	time = 0
-	team1_killed = 0
-	team2_killed = 0
+		# History Variables
+		self.Team1_history = []
+		self.Team2_history = []
 
-	# Still debating how to best represent the continuous environment...
-	surf_environment = np.zeros((width, height), dtype=np.int8)
-	sub_environment = np.zeros((width, height), dtype=np.int8)
+		# Setup Environmental variables
+		global width
+		global height
+		self.width = width
+		self.height = height
+		self.num_ships = 10
+		self.num_subs = 0
+		self.num_auvs = 100
+		self.num_asvs = 0
+		self.num_agents = self.num_ships + self.num_subs + self.num_auvs + self.num_asvs
+		self.team1_killed = 0
+		self.team2_killed = 0
+		self.time = 0
 
-	# Set Land areas
-	# surf_envrionment[1,1] = 1 # Land
-	for i in xrange(int(round(0.1*width))):
-		for j in xrange(int(round(0.1*height))):
-			if i**2 + j**2 < (0.1*width)**2:
-				surf_environment[i,j] = 1
-				surf_environment[(width-1)-i,(height-1)-j] = -1
+		# Make the environment
+		self.surf_environment = np.zeros((self.width, self.height), dtype=np.int8)
+		self.sub_environment = np.zeros((self.width, self.height), dtype=np.int8)
 
-	# Set land areas here in surf_environment and sub_environment by setting their number to be something
-	# other than 0. -1 maybe?
+		# Set Land areas
+		# surf_envrionment[1,1] = 1 # Land
+		for i in xrange(int(round(0.1*self.width))):
+			for j in xrange(int(round(0.1*self.height))):
+				if i**2 + j**2 < (0.1*self.width)**2:
+					self.surf_environment[i,j] = 1
+					self.surf_environment[(self.width-1)-i,(self.height-1)-j] = -1
 
-	# Set home ports for enemy and friendly
-	# Set locations here in surf_environment and sub_environment by setting their number to be
-	# something other than 0. 2 maybe? 1 would be occiupied...
+		# Put agents in the model
+		self.ships = []
+		self.auvs = []
+		self.asvs = []
+		self.subs = []
 
-	# The problem here with doing a grid is I'm making this a discrete environment... how do I
-	# represent the environment as a continuous space?
+		# Enemy Ships - Held Constant (Team 1)
+		for i in xrange(self.num_auvs):
+			self.auvs.append(AUV(
+				auv_id = i,
+				start_x = rand.uniform(10, 30),
+				start_y = rand.uniform(10, 30),
+				velocity = 2,
+				endurance = 1,
+				strength = 2,
+				team = 1,
+				radius = 5
+				))
 
-	# Setup the agents in the environment
-	ships = []
-	auvs = []
-	asvs = []
-	subs = []
+		for i in xrange(self.num_ships):
+			self.ships.append(Ship(
+				ship_id = i,
+				start_x = rand.uniform(10, 30),
+				start_y = rand.uniform(10, 30),
+				velocity = 5, #rand.uniform(4,10),
+				endurance = 1,
+				strength = 10,
+				team = 1,
+				radius = 10
+				))
 
-	for i in xrange(num_auvs):
-		auvs.append(AUV(
-			auv_id = i,
-			start_x = rand.uniform(10, 30),
-			start_y = rand.uniform(10, 30),
-			velocity = rand.uniform(4,10),
-			endurance = 1,
-			strength = 4,
-			team = 1,
-			radius = 10
-		))
+		# Friendly Ships - Chane with Simulation (Team 2)
+		for i in xrange(self.num_auvs):
+			self.auvs.append(AUV(
+				auv_id = i + self.num_auvs,
+				start_x = rand.uniform(70, 90),
+				start_y = rand.uniform(70, 90),
+				velocity = auv_speed,
+				endurance = auv_endurance,
+				strength = auv_strength,
+				team = 2,
+				radius = auv_range
+				))
 
-	for i in xrange(num_ships):
-		ships.append(Ship(
-			ship_id = i,
-			start_x = rand.uniform(10, 30),
-			start_y = rand.uniform(10, 30),
-			velocity = rand.uniform(4,10),
-			endurance = 1,
-			strength = 10,
-			team = 1,
-			radius = 20
-		))
+		for i in xrange(self.num_ships):
+			self.ships.append(Ship(
+				ship_id = self.num_ships + i,
+				start_x = rand.uniform(70, 90),
+				start_y = rand.uniform(70, 90),
+				velocity = 5, #rand.uniform(4,10),
+				endurance = 1,
+				strength = 10,
+				team = 2,
+				radius = 10
+				))
 
-	for i in xrange(num_auvs):
-		auvs.append(AUV(
-			auv_id = i + num_auvs,
-			start_x = rand.uniform(70, 90),
-			start_y = rand.uniform(70, 90),
-			velocity = rand.uniform(1,5),
-			endurance = 1,
-			strength = 2,
-			team = 2,
-			radius = 5
-		))
+	def step(self):
+		# Change time
+		self.time += 1
 
-	for i in xrange(num_ships):
-		ships.append(Ship(
-			ship_id = num_ships + i,
-			start_x = rand.uniform(70, 90),
-			start_y = rand.uniform(70, 90),
-			velocity = rand.uniform(4,10),
-			endurance = 1,
-			strength = 10,
-			team = 2,
-			radius = 20
-		))
+		# Randomly shuffle the list of ships and auvs (a few times)
+		rand.shuffle(self.auvs)
+		rand.shuffle(self.ships)
+		rand.shuffle(self.auvs)
+		rand.shuffle(self.ships)
+		rand.shuffle(self.auvs)
+		rand.shuffle(self.ships)
 
-#	auv1 = AUV(auv_id = 1, start_x = 50, start_y = 50, velocity = 10, endurance = 1, strength = 2, team = 1, radius = 5)
+		# Step through all of the agents
+		for auv in self.auvs:
+			auv.step()
+		for ship in self.ships:
+			ship.step()
 
-#	auv2 = AUV(auv_id = 2, start_x = 54, start_y = 50, velocity = 10, endurance = 1, strength = 2, team = 1, radius = 5)
+		# Update history variables
+		self.Team1_history.append(self.team1_killed)
+		self.Team2_history.append(self.team2_killed)
 
-#	auv3 = AUV(auv_id = 3, start_x = 52, start_y = 50, velocity = 10, endurance = 1, strength = 4, team = 2, radius = 5)
+		# Give a status update
+		#if self.time%10 == 0:
+		#print "Enemy Killed ", self.team1_killed
+		#print "Friendly Killed ", self.team2_killed
 
-#	auv4 = AUV(auv_id = 4, start_x = 52, start_y = 52, velocity = 10, endurance = 1, strength = 2, team = 1, radius = 5)
+		# Stopping Criteria
+		if self.team1_killed == self.num_agents or self.team2_killed == self.num_agents or self.time > self.max_iter:
+			print "Simulation ", self.id, " has ended."
+			self.run_status = False
 
-#	auvs = [auv1,auv2,auv3,auv4]
+	def run_sim(self):
+		# run Simulation
+		while self.run_status:
+			self.step()
+
+# Iterate
+num_simulations = 20
+sim_history = []
+win_history = []
+
+# Parameters
+auv_speed = 1
+auv_endurance = 1
+auv_strength = 2
+auv_range = 5
+
+sim_nums = range(1,11)
+
+sim_speeds = np.linspace(0.5,10.0,num=50)
+sim_ranges = np.linspace(1.0,20.0,num=50)
+sim_strengths = [1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4,4,4,4,4,5,5,5,5,5,6,6,6,6,6,7,7,7,7,7,8,8,8,8,8,9,9,9,9,9,10,10,10,10,10]
+sim_param = []
+
+print "Beginning Simulations"
+
+for i in xrange(num_simulations):
+	sim = Simulation(simulation_number = i+1)
+	sim.run_sim()
+	sim_history.append(sim)
+	if sim.team1_killed == sim.num_agents:
+		win_history.append(2)
+	else:
+		win_history.append(1)
+
+print "Writing to File"
+
+# Print results to a file
+with open('baseline2_win_results.txt', 'w') as filehandle:
+	for listitem in win_history:
+		filehandle.write('%1.0f\n' % listitem)
+
+with open('baseline2_team1_results.txt', 'w') as filehandle:
+	for listitem in sim_history[5].Team1_history:
+		filehandle.write('%3.0f\n' % listitem)
+
+with open('baseline2_team2_results.txt', 'w') as filehandle:
+	for listitem in sim_history[5].Team2_history:
+		filehandle.write('%3.0f\n' % listitem)
+
+#with open('strength_list.txt', 'w') as filehandle:
+#for listitem in sim_strengths:
+#filehandle.write('%3.4f\n' % listitem)
 
 
+print "Complete"
 
-def draw():
-	plt.cla() # check
-	plt.pcolor(surf_environment, cmap = 'bwr')
-	plt.axis('image')
-	auv_x_1 = []
-	auv_y_1 = []
-	auv_x_2 = []
-	auv_y_2 = []
-	ship_x_1 = []
-	ship_y_1 = []
-	ship_x_2 = []
-	ship_y_2 = []
-	for auv in auvs:
-		if auv.team == 1:
-			auv_x_1.append(auv.x)
-			auv_y_1.append(auv.y)
-		if auv.team == 2:
-			auv_x_2.append(auv.x)
-			auv_y_2.append(auv.y)
-	for ship in ships:
-		if ship.team == 1:
-			ship_x_1.append(ship.x)
-			ship_y_1.append(ship.y)
-		if ship.team == 2:
-			ship_x_2.append(ship.x)
-			ship_y_2.append(ship.y)
-	plt.scatter(auv_x_1,auv_y_1,c = 'C1')
-	plt.scatter(auv_x_2,auv_y_2,c = 'C0')
-	plt.scatter(ship_x_1,ship_y_1,c = 'C1',marker = '^')
-	plt.scatter(ship_x_2,ship_y_2,c = 'C0',marker = '^')
-	plt.title('time step = ' + str(time))
-
-def step():
-	global time, agents, surf_environment, sub_environment, team1_killed, team2_killed
-
-	time += 1
-
-	rand.shuffle(auvs)
-	rand.shuffle(ships)
-
-	for auv in auvs:
-		auv.step()
-
-	for ship in ships:
-		ship.step()
-
-	if time%10 == 0:
-		print "Team 1 Killed ", team1_killed
-		print "Team 2 Killed ", team2_killed
-
-	team_total = num_asvs + num_auvs + num_subs + num_ships
-
-	if team1_killed == team_total or team2_killed == team_total:
-		print "Game over"
-
-import pycxsimulator
-sim_gui = pycxsimulator.GUI().start(func=[init,draw,step])
+#plt.figure
+#plt.hist(win_history)
